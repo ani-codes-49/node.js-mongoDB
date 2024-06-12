@@ -6,9 +6,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js"
   },
-  "keywords": [
-    "A"
-  ],
   "author": "Aniruddh Karekar",
   "license": "ISC",
   "description": "",
@@ -16,6 +13,7 @@
     "body-parser": "^1.20.2",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
-    "pug": "^3.0.3"
+    "mysql2": "^1.6.1",
+    "sequelize": "^5.0.0-beta.11"
   }
 }
