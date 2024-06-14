@@ -22,18 +22,15 @@ exports.getIndexPage = (req, res, next) => {
 
 exports.getProductDetails = (req, res, next) => {
     // console.log('inside prod details');
-    const prodID = req.params.prodID;
+    const prodID = req.params.productID;
 
-    Product.findAll({ where: { id: prodID } }).then(
-        products => {
-            // console.log(products);
-            if (products.length > 0) {
-                res.render('shop/product-details', {
-                    product: products[0],
-                    pageTitle: products[0].title,
-                    path: '/product'
-                });
-            }
+    Product.findByPk(prodID).then(
+        product => {
+            res.render('shop/product-details', {
+                product: product,
+                pageTitle: product.title,
+                path: '/product'
+            });
         }
     ).catch(err => console.log(err));
 
@@ -127,7 +124,6 @@ exports.postCartData = (req, res, next) => {
     const prodID = req.body.prodID;
     let fetchedCart;
     let newQuantity = 1;
-    console.log('inside postCart');
     req.user.getCart().then( // get existing cart
         cart => {
             fetchedCart = cart; // assign a copy of the cart for global access
@@ -176,30 +172,86 @@ exports.postCartData = (req, res, next) => {
 exports.deleteCartItem = (req, res, next) => {
 
     const prodID = req.body.productID;
-
-    // console.log('from delete cart Item: ', req.body);
-    //here we have to pass the price to the cart in order to remove the product from
-    //cart and update the 
-
-    Product.get(prodID, product => {
-        console.log(product.price);
-        Cart.deleteItem(prodID, product.price, () => {
+    req.user.getCart(
+        cart => {
+            return cart.getProducts({ where: { id: prodID } });
+        }
+    ).then(
+        products => {
+            console.log(products);
+            let product = products[0];
+            //magic method
+            if (product) return product.cartItem.destroy();
+        }
+    ).then(
+        result => {
             res.redirect('/cart');
-        });
-    });
+        }
+    ).catch(
+        err => console.log(err)
+    );
+
+}
+
+exports.postOrdersData = (req, res, next) => {
+
+    //here we will move the data from the cart to the orders table
+    //first we will fetch the data from the carts
+    console.log('inside post orders');
+    let fetchedCart;
+    req.user.getCart(
+        cart => {
+            fetchedCart = cart;
+            return cart.getProducts();
+        }
+    ).then(
+        products => {
+            return products.createOrder().then(
+                order => {
+                    //move the cart data to the newly created order table
+                    return order.addProducts(products.map(
+                        product => {
+                            product.orderItem = {
+                                // id: 1,
+                                quantity: product.cartItem.quantity,
+                                // productId: product.id,
+                            };
+                            return product;
+                        }
+                    ));
+                }
+            ).catch(
+                err => console.log(err)
+            );
+        }
+    ).then(
+        res => {
+            return fetchedCart.setProducts(null);
+        }
+    ).then(
+        res => {
+            res.redirect('/orders');
+        }
+    ).catch(
+        err => console.log(err)
+    );
 
 }
 
 exports.getOrdersData = (req, res, next) => {
     // console.log('inside shop: ', products);
-    Product.getAll(products => {
-        res.render('shop/orders', {
-            products: products,
-            pageTitle: 'Orders',
-            path: '/orders',
-            hasProducts: products.length > 0,
-            activeShop: true,
-            productCSS: true
-        });
-    });
+    req.user.getOrders(
+        { include: ['products'] }
+    ).then(
+        orders => {
+            res.render('shop/orders', {
+                path: '/orders',
+                pageTitle: 'Your orders',
+                order: orders,
+            }
+            );
+        }
+    ).catch(
+        err => console.log(err)
+    );
 };

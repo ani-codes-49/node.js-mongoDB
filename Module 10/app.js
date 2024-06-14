@@ -17,6 +17,8 @@ const User = require('./models/user');
 const Product = require('./models/product');
 const Cart = require('./models/cart');
 const CartItem = require('./models/cart-item');
+const Order = require('./models/order');
+const OrderItem = require('./models/order-item');
 
 app.use(bodyParer.urlencoded({ extended: false }));
 app.use(express.static(path.join(root_dir.rootPath, 'public')));
@@ -51,7 +53,12 @@ User.hasMany(Product);
 User.hasOne(Cart);
 Cart.belongsTo(User);
 Cart.belongsToMany(Product, { through: CartItem });
-Product.belongsToMany(Cart, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem }); // optional
+User.hasMany(Order);
+Order.belongsTo(User);
+Order.belongsToMany(Product, {through: OrderItem});
+
+
 // through argument is for the intermediate 
 //tables that connects the main tables by primary keys
 
@@ -75,7 +82,14 @@ sequel.sync(
         //also returns a promise
     }
 ).then(user => {
-    return user.createCart({id: 1});
+    user.getCart(
+        cart => {
+            if(!cart) {
+                return user.createCart({id: 2});
+            } 
+            return cart;
+        }
+    ).then().catch();
 }
 ).then(
     res => {
