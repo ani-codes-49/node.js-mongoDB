@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParer = require('body-parser');
 const path = require('path');
 const root_dir = require('./util/root_path');
-const error = require('./controllers/errors');
 const sequel = require('./util/database');
 
 const app = express();
