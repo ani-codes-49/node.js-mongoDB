@@ -14,7 +14,7 @@ const auth = require("./routes/auth");
 const User = require("./models/user");
 
 const store = new MongoDBStore({
-  uri: "mongodb+srv://aniruddhkarekar1:hHFdkybiuBDtiJBM@cluster0.2bhulxe.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0",
+  uri: "mongodb+srv://aniruddhkarekar1:hHFdkybiuBDtiJBM@cluster0.2bhulxe.mongodb.net/shop",
   collection: "sessions",
   maxAge: 10000,
 });
@@ -33,6 +33,20 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
+    .then((user) => {
+      if (user) {
+        req.user = user;
+        next();
+      }
+    })
+    .catch((err) => console.log(err));
+});
+
 app.use(auth.router);
 app.use("/admin", admin.router);
 app.use(user.router);
@@ -50,9 +64,6 @@ mongoose
     "mongodb+srv://aniruddhkarekar1:hHFdkybiuBDtiJBM@cluster0.2bhulxe.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then((result) => {
-    //here if we do not specify any constraints in the findOne() method then the
-    //mongoose will return the first user that it will find
-
     User.findOne().then((user) => {
       if (!user) {
         //creating user statically
@@ -63,7 +74,7 @@ mongoose
             items: [],
           },
         });
-        user.save()
+        user.save();
       }
     });
     console.log("Connected through mongoose");

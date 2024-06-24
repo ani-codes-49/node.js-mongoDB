@@ -1,14 +1,8 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
-const User = require("../models/user");
 
 exports.getIndexPage = (req, res, next) => {
-  console.log(req.session.user);
-  console.log("isLogged in : ", req.session.isLoggedIn);
-  //this find() method is provided by the mongoose and returns all the data that is
-  //present in the db
   Product.find()
-
     .then((result) => {
       // console.log(result);
       res.render("shop/product_list", {
@@ -56,7 +50,7 @@ exports.getProductDetails = (req, res, next) => {
 };
 
 exports.getCartData = (req, res, next) => {
-  req.session.user
+  req.user
     .populate("cart.items.productId")
     .then((user) => {
       // console.log(user.cart.items);
@@ -71,12 +65,11 @@ exports.getCartData = (req, res, next) => {
 };
 
 exports.postCartData = (req, res, next) => {
-  // console.log('inside postCart: ');
   const prodID = req.body.productID;
 
   Product.findById(prodID)
     .then((product) => {
-      return req.session.user.addToCart(product);
+      return req.user.addToCart(product);
     })
     .then((result) => {
       // console.log("product added to cart");
@@ -87,7 +80,7 @@ exports.postCartData = (req, res, next) => {
 exports.deleteCartItem = (req, res, next) => {
   const prodID = req.body.productID;
   console.log(prodID);
-  req.session.user
+  req.user
     .deleteCartItem(prodID)
     .then((products) => {
       // console.log(products);
@@ -102,17 +95,12 @@ exports.deleteCartItem = (req, res, next) => {
 };
 
 exports.postOrdersData = (req, res, next) => {
-  req.session.user
+  req.user
     .populate("cart.items.productId")
     .then((user) => {
       const products = user.cart.items.map((item) => {
-        return {
-          product: { ...item.productId._doc },
-          quantity: item.quantity,
-        };
-        //the ._doc method is used to get only the relevant information from the json
-        //object
-      }); //got the cart items in a list
+        return { product: { ...item.productId._doc }, quantity: item.quantity };
+      });
 
       const order = new Order({
         products: products,
@@ -124,7 +112,7 @@ exports.postOrdersData = (req, res, next) => {
       return order.save();
     })
     .then((result) => {
-      return req.session.user.clearCart();
+      return req.user.clearCart();
     })
     .then((result) => {
       res.redirect("/orders");
@@ -133,7 +121,7 @@ exports.postOrdersData = (req, res, next) => {
 };
 
 exports.getOrdersData = (req, res, next) => {
-  Order.find({ "user.userId": req.session.user._id })
+  Order.find({ "user.userId": req.user._id })
     .then((orders) => {
       res.render("shop/orders", {
         path: "/orders",
