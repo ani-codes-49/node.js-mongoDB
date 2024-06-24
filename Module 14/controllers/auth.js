@@ -1,24 +1,21 @@
-const User = require("../models/user");
-
 exports.getLogin = (req, res, next) => {
   // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
   // console.log(req.get('Cookie'));
 
-  // console.log("is logged in : ", req.session.isLoggedIn);
+  console.log('is logged in : ', req.session.isLoggedIn);
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    isAuthenticated: req.session.isLoggedIn,
+    isAuthenticated: false,
   });
 };
 
 exports.postLogin = (req, res, next) => {
-  User.findById("66780f6ce5126412cba3417c")
-    .then((user) => {
-      req.session.user = user;
-      req.session.isLoggedIn = true;
+  //req.isLoggedIn = true; this req variable will only be accessible only till
+  //we don't send a response. After we send a response then the req object will be
+  //deleted and therefor we cannot access any data associated with the request object
 
-      res.redirect("/");
-    })
-    .catch((err) => console.log(err));
+  req.session.isLoggedIn = true;
+
+  res.redirect("/");
 };

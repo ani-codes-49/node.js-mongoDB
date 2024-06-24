@@ -22,7 +22,7 @@ exports.postAddProducts = (req, res, next) => {
     price: request.price,
     imageUrl: request.imageUrl,
     description: request.description,
-    userId: req.user._id,
+    userId: req.session.user._id,
   });
 
   //now the mongoose provides the default save method for saving the data inside the db

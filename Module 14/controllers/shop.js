@@ -1,14 +1,20 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
-const User = require("../models/user");
 
 exports.getIndexPage = (req, res, next) => {
-  console.log(req.session.user);
-  console.log("isLogged in : ", req.session.isLoggedIn);
+  // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
+
   //this find() method is provided by the mongoose and returns all the data that is
   //present in the db
   Product.find()
+    // .select('title price -_id') // we can select the fields that we need through this method
+    //and if we want to omit any field then just write -<field-name>
 
+    // .populate('userId', 'name email')  this method is used to get the specific nested
+    //data that we need suppose I have embedded userId in the product document then
+    //I can retrieve all the data regarding that embeddedId which belongs to the
+    //different collection (userId field in the Product model will return the specified
+    //fields from the User model)
     .then((result) => {
       // console.log(result);
       res.render("shop/product_list", {
@@ -25,6 +31,8 @@ exports.getIndexPage = (req, res, next) => {
 };
 
 exports.getProductsData = (req, res, next) => {
+  // console.log('inside shop: ', products);
+  // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
   Product.find()
     .then((result) => {
       res.render("shop/product_list", {
@@ -42,7 +50,9 @@ exports.getProductsData = (req, res, next) => {
 
 exports.getProductDetails = (req, res, next) => {
   const prodID = req.params.productID;
-
+  // console.log('inside prod details', prodID);
+  //this findById() method is provided by the mongoose and its not user defined
+  // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
   Product.findById(prodID)
     .then((product) => {
       res.render("shop/product-details", {
@@ -56,8 +66,14 @@ exports.getProductDetails = (req, res, next) => {
 };
 
 exports.getCartData = (req, res, next) => {
-  req.session.user
-    .populate("cart.items.productId")
+  //magic method as cart belongs to many products
+  // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
+
+  req.user
+    .populate("cart.items.productId") // will retrieve the productIds for the
+    //products which are in user's cart from which the populate() method is called
+    //upon
+    // .execPopulate() //it will return a promise unlike to populate()
     .then((user) => {
       // console.log(user.cart.items);
       res.render("shop/cart", {
@@ -74,9 +90,11 @@ exports.postCartData = (req, res, next) => {
   // console.log('inside postCart: ');
   const prodID = req.body.productID;
 
+  //getting product which is to be added in the cart
+
   Product.findById(prodID)
     .then((product) => {
-      return req.session.user.addToCart(product);
+      return req.user.addToCart(product);
     })
     .then((result) => {
       // console.log("product added to cart");
@@ -87,7 +105,7 @@ exports.postCartData = (req, res, next) => {
 exports.deleteCartItem = (req, res, next) => {
   const prodID = req.body.productID;
   console.log(prodID);
-  req.session.user
+  req.user
     .deleteCartItem(prodID)
     .then((products) => {
       // console.log(products);
@@ -102,14 +120,13 @@ exports.deleteCartItem = (req, res, next) => {
 };
 
 exports.postOrdersData = (req, res, next) => {
-  req.session.user
+  req.user
     .populate("cart.items.productId")
     .then((user) => {
+      //we want to add cart items to the orders thats why we will get the cart items
+      //first and then we will add it into the orders
       const products = user.cart.items.map((item) => {
-        return {
-          product: { ...item.productId._doc },
-          quantity: item.quantity,
-        };
+        return { product: { ...item.productId._doc }, quantity: item.quantity };
         //the ._doc method is used to get only the relevant information from the json
         //object
       }); //got the cart items in a list
@@ -124,7 +141,7 @@ exports.postOrdersData = (req, res, next) => {
       return order.save();
     })
     .then((result) => {
-      return req.session.user.clearCart();
+      return req.user.clearCart();
     })
     .then((result) => {
       res.redirect("/orders");
@@ -133,7 +150,9 @@ exports.postOrdersData = (req, res, next) => {
 };
 
 exports.getOrdersData = (req, res, next) => {
-  Order.find({ "user.userId": req.session.user._id })
+  // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
+  // console.log('inside shop: ', products);
+  Order.find({ "user.userId": req.user._id })
     .then((orders) => {
       res.render("shop/orders", {
         path: "/orders",
