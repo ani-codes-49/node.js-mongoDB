@@ -38,7 +38,6 @@ exports.postAddProducts = (req, res, next) => {
 exports.getAdminEditProducts = (req, res, next) => {
   const prodID = req.params.productID;
   const isEditing = req.query.edit;
-  // const isLoggedIn = req.get("Cookie").split(';')[0].trim().split(':')[1].trim() === 'true';
 
   if (isEditing == "false") {
     Product.find()
@@ -52,7 +51,6 @@ exports.getAdminEditProducts = (req, res, next) => {
       })
       .catch((err) => console.log(err));
   } else {
-    // console.log('inside getAdminEditProducts');
     Product.findById(prodID)
       .then((product) => {
         res.render("admin/edit-product", {

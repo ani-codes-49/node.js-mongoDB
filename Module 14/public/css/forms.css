@@ -2,6 +2,10 @@
   margin: 1rem 0;
 }
 
+.btn {
+  justify-content: center;
+}
+
 .form-control label,
 .form-control input,
 .form-control textarea {
