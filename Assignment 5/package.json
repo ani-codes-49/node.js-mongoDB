@@ -1,0 +1,27 @@
+{
+  "name": "module-14",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "Aniruddh Karekar",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "connect-flash": "^0.1.1",
+    "connect-mongodb-session": "^5.0.0",
+    "csurf": "^1.11.0",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "express-validator": "^7.1.0",
+    "mongodb": "^6.7.0",
+    "mongoose": "^8.4.3",
+    "nodemailer": "^6.9.14",
+    "nodemailer-sendgrid-transport": "^0.2.0"
+  }
+}

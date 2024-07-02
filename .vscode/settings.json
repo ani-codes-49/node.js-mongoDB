@@ -32,4 +32,5 @@
 
     // Enable parameter hints
     "editor.parameterHints.enabled": true,
+    "git.ignoreLimitWarning": true,
 }
