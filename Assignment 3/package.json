@@ -1,0 +1,15 @@
+{
+  "name": "assignment-3",
+  "version": "1.0.0",
+  "description": "Assignment 3",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app"
+  },
+  "author": "Aniruddh Karekar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
